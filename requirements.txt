@@ -1,0 +1,5 @@
+os
+requests
+time 
+PySimpleGUI 
+pprint

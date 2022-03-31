@@ -1,0 +1,8 @@
+/tmp/
+tmp/
+tmp.log
+*.pyc
+*.egg-info
+.DS_Store
+/env
+/.env
