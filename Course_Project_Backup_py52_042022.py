@@ -48,14 +48,33 @@ class VkGetPhoto:
             last_name_ID = res_search.json()['response'][0]['last_name']
             text_check_result = f'ID user {search_ID} is real existing!\nFirst name is: {first_name_ID}.\nLast name is: {last_name_ID}.'
         print(text_check_result)
+        return search_ID
 
-    def my_function_VK_3():
-        """It is a docstring"""
-        return None
+    # Function for the getting profile photos by ID user. 
+    def get_photos_VK():
+        """This is function to get profile photos by ID user."""
+        token = VkGetPhoto.token_VK()
+        url = 'https://api.vk.com/method/photos.get'
+        params = {
+            'owner_id': VkGetPhoto.check_ID_VK(),
+            'access_token': token, 
+            'v':'5.131',
+            'album_id' : 'profile',
+            'extended' : '1',
+            'photo_sizes' : '1',
+            'count' : '100'
+        }
+        res_get_photos = requests.get(url=url, params=params)
+        get_profile_photos = res_get_photos.json()['response']['items']
+        pprint(get_profile_photos)
 
     def my_function_VK_4():
         """It is a docstring"""
         return None
+
+    def my_function_VK_5():
+        """It is a docstring"""
+        return None    
 
 class YandexUploader:
     def __init__(self, token_ya: str):
@@ -82,4 +101,4 @@ def progress_bar():
         time.sleep(1)
 
 
-VkGetPhoto.check_ID_VK()
+VkGetPhoto.get_photos_VK()
