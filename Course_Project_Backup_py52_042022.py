@@ -10,9 +10,17 @@ class VkGetPhoto:
     def __init__(self, token_vk: str):
         self.token_vk = token_vk
 
-    def my_function_VK_1():
-        """It is a docstring"""
-        return None
+    # Get ID method of VK user with digits check.
+    def get_ID_VK():
+        """It is the get ID method of VK user with digits checking."""
+        while True:
+            owner_id = input('Please, input the ID VK user (attention: only digits!): ')
+            if owner_id.isdigit():
+                print(f'OK, recieved ID {owner_id} from you.')
+                break
+            print(f"You write {owner_id}. It's wrong ID!")
+                     
+        return owner_id
 
     def my_function_VK_2():
         """It is a docstring"""
@@ -22,9 +30,8 @@ class VkGetPhoto:
         """It is a docstring"""
         return None
 
-class YandexUploader(VkGetPhoto):
-    def __init__(self, token_vk: str, token_ya: str):
-        super().__init__(token_vk)
+class YandexUploader:
+    def __init__(self, token_ya: str):
         self.token_ya = token_ya
     
     def my_function_YA_1():
@@ -47,4 +54,5 @@ def progress_bar():
         sg.one_line_progress_meter('Progress bar.', i+1, len(mylist), 'It is indicator of progress.', orientation='h', bar_color='red', no_titlebar=True, size=(60,10), no_button=True)
         time.sleep(1)
 
-progress_bar()
+
+VkGetPhoto.get_ID_VK()
