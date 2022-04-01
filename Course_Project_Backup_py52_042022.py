@@ -18,15 +18,35 @@ class VkGetPhoto:
             if owner_id.isdigit():
                 print(f'OK, recieved ID {owner_id} from you.')
                 break
-            print(f"You write {owner_id}. It's wrong ID!")
-                     
+            print(f"You write {owner_id}. It's wrong ID!")                 
         return owner_id
 
-    def my_function_VK_2():
+    # Check user ID function in base of VK. 
+    def check_ID_VK():
+        """It is the function check user ID in base of VK."""
+        with open('token.txt', 'r') as file:
+            token = file.read().strip()
+        url = 'https://api.vk.com/method/users.get'
+        params = {
+            'user_id': VkGetPhoto.get_ID_VK(),
+            'access_token': token, 
+            'v':'5.131'
+        }
+        res_search = requests.get(url=url, params=params)
+        if res_search.json()['response'] == []:
+            text_check_result = f'This ID user is not really existing!'
+        else:
+            search_ID = res_search.json()['response'][0]['id']
+            first_name_ID = res_search.json()['response'][0]['first_name']
+            last_name_ID = res_search.json()['response'][0]['last_name']
+            text_check_result = f'ID user {search_ID} is real existing!\nFirst name is: {first_name_ID}.\nLast name is: {last_name_ID}.'
+        print(text_check_result)
+
+    def my_function_VK_3():
         """It is a docstring"""
         return None
 
-    def my_function_VK_3():
+    def my_function_VK_4():
         """It is a docstring"""
         return None
 
@@ -55,4 +75,4 @@ def progress_bar():
         time.sleep(1)
 
 
-VkGetPhoto.get_ID_VK()
+VkGetPhoto.check_ID_VK()
