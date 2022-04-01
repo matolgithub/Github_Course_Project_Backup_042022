@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import token
 import os
 import requests
 import time 
@@ -9,6 +10,13 @@ from pprint import pprint
 class VkGetPhoto:
     def __init__(self, token_vk: str):
         self.token_vk = token_vk
+
+    # Token VK function. 
+    def token_VK():
+        """It is the token function for the access to VK."""
+        with open('token.txt', 'r') as file:
+            token = file.read().strip()    
+        return token
 
     # Get ID method of VK user with digits check.
     def get_ID_VK():
@@ -24,8 +32,7 @@ class VkGetPhoto:
     # Check user ID function in base of VK. 
     def check_ID_VK():
         """It is the function check user ID in base of VK."""
-        with open('token.txt', 'r') as file:
-            token = file.read().strip()
+        token = VkGetPhoto.token_VK()
         url = 'https://api.vk.com/method/users.get'
         params = {
             'user_id': VkGetPhoto.get_ID_VK(),
