@@ -1,9 +1,9 @@
-from lib2to3.pgen2 import token
 import os
 import requests
 import time 
 import PySimpleGUI as sg
 from pprint import pprint
+from datetime import datetime
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -24,31 +24,23 @@ class VkGetPhoto:
         while True:
             owner_id = input('Please, input the ID VK user (attention: only digits!): ')
             if owner_id.isdigit():
-                print(f'OK, recieved ID {owner_id} from you.')
-                break
-            print(f"You write {owner_id}. It's wrong ID!")                 
+                token = VkGetPhoto.token_VK()
+                url = 'https://api.vk.com/method/users.get'
+                params = {
+                    'user_id': owner_id,
+                    'access_token': token, 
+                    'v':'5.131'
+                }
+                res_search = requests.get(url=url, params=params)
+                if res_search.json()['response'] == []:
+                    print(f'You write {owner_id}. This ID user is not really existing! Try again!')
+                else:
+                    search_ID = res_search.json()['response'][0]['id']
+                    first_name_ID = res_search.json()['response'][0]['first_name']
+                    last_name_ID = res_search.json()['response'][0]['last_name']
+                    print(f'ID user {search_ID} is real existing!\nFirst name is: {first_name_ID}.\nLast name is: {last_name_ID}.')
+                    break         
         return owner_id
-
-    # Check user ID function in base of VK. 
-    def check_ID_VK():
-        """It is the function check user ID in base of VK."""
-        token = VkGetPhoto.token_VK()
-        url = 'https://api.vk.com/method/users.get'
-        params = {
-            'user_id': VkGetPhoto.get_ID_VK(),
-            'access_token': token, 
-            'v':'5.131'
-        }
-        res_search = requests.get(url=url, params=params)
-        if res_search.json()['response'] == []:
-            text_check_result = f'This ID user is not really existing!'
-        else:
-            search_ID = res_search.json()['response'][0]['id']
-            first_name_ID = res_search.json()['response'][0]['first_name']
-            last_name_ID = res_search.json()['response'][0]['last_name']
-            text_check_result = f'ID user {search_ID} is real existing!\nFirst name is: {first_name_ID}.\nLast name is: {last_name_ID}.'
-        print(text_check_result)
-        return search_ID
 
     # Function for the getting profile photos by ID user. 
     def get_photos_VK():
@@ -56,7 +48,7 @@ class VkGetPhoto:
         token = VkGetPhoto.token_VK()
         url = 'https://api.vk.com/method/photos.get'
         params = {
-            'owner_id': VkGetPhoto.check_ID_VK(),
+            'owner_id': VkGetPhoto.get_ID_VK(),
             'access_token': token, 
             'v':'5.131',
             'album_id' : 'profile',
@@ -65,14 +57,26 @@ class VkGetPhoto:
             'count' : '100'
         }
         res_get_photos = requests.get(url=url, params=params)
-        get_profile_photos = res_get_photos.json()['response']['items']
-        pprint(get_profile_photos)
+        try:
+            get_profile_photos = res_get_photos.json()['response']['items']
+        except KeyError:
+            print("Sorry! Different problems with this ID user!")
+        else:
+            pprint(get_profile_photos)
 
-    def my_function_VK_4():
-        """It is a docstring"""
+    # Function converting date from sec to day-month-year.
+    def convert_date(date_sec):
+        """This method for converting date from sec to day-month-year."""
+        norm_date = datetime.fromtimestamp(date_sec).strftime("%d_%B_%Y")
+        return norm_date  
+
+    # Function for the selection getting profile photos from the user ID account with the maximum sizes.
+    def selection_get_photos(num_photos=5):
+        """It is the method for the selection getting profile photos from the user ID account with the maximum sizes"""
+        
         return None
 
-    def my_function_VK_5():
+    def my_function_VK_6():
         """It is a docstring"""
         return None    
 
