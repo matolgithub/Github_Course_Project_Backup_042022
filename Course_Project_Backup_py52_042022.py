@@ -42,28 +42,32 @@ class VkGetPhoto:
                     break         
         return owner_id
 
-    # Function for the getting profile photos by ID user. 
+    # Function for the getting profile photos by ID user and type/number albums. 
     def get_photos_VK():
-        """This is function to get profile photos by ID user."""
+        """This is function to get profile photos by ID user and type/number albums."""
+        while True:
+            choice_album = input('Please, input type album ("profile" or "wall") or give ID of album: ')
+            if choice_album == "profile" or choice_album == "wall" or choice_album.isdigit():
+                break
+            else:
+                print("Wrong input, try again!")
         token = VkGetPhoto.token_VK()
         url = 'https://api.vk.com/method/photos.get'
         params = {
             'owner_id': VkGetPhoto.get_ID_VK(),
             'access_token': token, 
             'v':'5.131',
-            'album_id' : 'profile',
+            'album_id' : choice_album,
             'extended' : '1',
             'photo_sizes' : '1',
-            'count' : '100'
+            'count' : '1000'
         }
         res_get_photos = requests.get(url=url, params=params)
         try:
-            get_profile_photos = res_get_photos.json()['response']['items']
+            get_album_photos = res_get_photos.json()['response']['items']
         except KeyError:
-            print("Sorry! Different problems with this ID user!")
-        else:
-            pprint(get_profile_photos)
-        return get_profile_photos
+            print(f"Sorry! Have a problem to get photos from {choice_album} for this ID user.")
+        return get_album_photos
 
     # Function converting date from sec to day-month-year.
     def convert_date(date_sec):
@@ -87,11 +91,11 @@ class VkGetPhoto:
                 break
             else:
                 if count_photos < num_photos:
-                    print(f'The user have only {count_photos} profile photos. It is less, then you need.')
+                    print(f'The user have only {count_photos} photos. It is less, then you need.')
                 elif count_photos == num_photos:
-                    print(f'The user have {count_photos} profile photos. You need {num_photos} too.')
+                    print(f'The user have {count_photos} photos. You need {num_photos} too.')
                 elif count_photos > num_photos:
-                    print(f'The user have {count_photos} profile photos. You need {num_photos} The part of photos not will be include in list.')
+                    print(f'The user have {count_photos} photos. You need {num_photos} The part of photos not will be include in list.')
                 list_id_photos = list_id_photos[:num_photos]
                 print(f'The default value is 5 photos. You requested {num_photos}. The list of photos is: {list_id_photos}.')
                 break
@@ -133,6 +137,6 @@ def progress_bar():
 
 
 # testing part:
-# VkGetPhoto.get_photos_VK() - successfully
+# VkGetPhoto.get_photos_VK() - ?????
 # print(VkGetPhoto.convert_date(1562944607)) - successfully
-# VkGetPhoto.profile_list_photos_VK(1500) - successfully
+VkGetPhoto.profile_list_photos_VK(10)
