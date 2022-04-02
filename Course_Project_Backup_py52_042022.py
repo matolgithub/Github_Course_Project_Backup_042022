@@ -83,8 +83,8 @@ class VkGetPhoto:
         while True:
             list_id_photos = []
             count_photos = 0
-            all_photos = VkGetPhoto.get_photos_VK()
             try:
+                all_photos = VkGetPhoto.get_photos_VK()
                 for item in all_photos:
                     list_id_photos.append(item['id'])
                     list_id_photos = list_id_photos[::-1]       # sorted from newest to oldest
@@ -93,14 +93,8 @@ class VkGetPhoto:
                 print(f'It is not possible to create list photos for this user. Maybe it is closed or deleted profile.')
                 break
             else:
-                if count_photos < num_photos:
-                    print(f'The user have only {count_photos} photos. It is less, then you need.')
-                elif count_photos == num_photos:
-                    print(f'The user have {count_photos} photos. You need {num_photos} too.')
-                elif count_photos > num_photos:
-                    print(f'The user have {count_photos} photos. You need {num_photos} The part of photos not will be include in list.')
                 list_id_photos = list_id_photos[:num_photos]
-                print(f'The default value is 5 photos. You requested {num_photos}. The list of photos is: {list_id_photos}.')
+                print(f'The user have {count_photos} photos. You requested {num_photos}. The list of photos is: {list_id_photos}.')
                 break
         for i in list_id_photos:
             for j in all_photos:
@@ -108,12 +102,35 @@ class VkGetPhoto:
                     dict_id_photos[i] = j
         return dict_id_photos
 
-    # Function for the selection getting profile photos from the user ID account with the maximum sizes.
-    def selection_get_photos(num_photos=5):
-        """It is the method for the selection getting profile photos from the user ID account with the maximum sizes"""
-        pass
-        pprint(None)
-        return None
+    # Function for the selection getting photos from the user ID account with the maximum sizes.
+    def selection_get_photos():
+        """It is the method for the selection getting photos from the user ID account with the maximum sizes."""
+        max_photos_dict = {}
+        while True:
+            inp_num_photos = input('Input the numbers of photos you need (by default "5"): ')
+            try:
+                result_photos = VkGetPhoto.dict_list_photos_VK(int(inp_num_photos))
+            except ValueError:
+                print('Wrong, try again!')
+            else:
+                for i in result_photos:
+                    max_perim = 0
+                    type_max_photo = ''
+                    if result_photos[i]['sizes'] != []:
+                        for j in result_photos[i]['sizes']:
+                            half_perim = (int(j['height']) + int(j['width']))
+                            if half_perim > max_perim:
+                                max_perim = half_perim
+                                type_max_photo = j['type']
+                        max_photos_dict[i] = {
+                            'max_half_perim' : max_perim,
+                            'max_photo_type' : type_max_photo,
+                            'likes' : result_photos[i]['likes']['count'],
+                            'date' : VkGetPhoto.convert_date(result_photos[i]['date'])
+                        }     
+                break
+        pprint(max_photos_dict)
+        return max_photos_dict
 
     def my_function_VK_6():
         """It is a docstring"""
@@ -147,4 +164,5 @@ def progress_bar():
 # testing part:
 # VkGetPhoto.get_photos_VK() - successfully
 # print(VkGetPhoto.convert_date(1562944607)) - successfully
-# VkGetPhoto.dict_list_photos_VK(3) - successfully
+# VkGetPhoto.dict_list_photos_VK(10)  - successfully
+VkGetPhoto.selection_get_photos()
