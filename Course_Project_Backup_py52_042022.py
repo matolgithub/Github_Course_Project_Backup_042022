@@ -8,8 +8,9 @@ from datetime import datetime
 
 
 class VkGetPhoto:
-    def __init__(self, token_vk: str):
-        self.token_vk = token_vk
+    # ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    def __init__(self, token: str):
+        self.token = token
 
     # Token VK function. 
     def token_VK():
@@ -75,14 +76,16 @@ class VkGetPhoto:
         norm_date = datetime.fromtimestamp(date_sec).strftime("%d_%B_%Y")
         return norm_date  
 
-    # Function to create list of ID getting profile photos from the user account.
-    def profile_list_photos_VK(num_photos=5):
-        """This is the method creating list of ID getting profile photos from the user account."""
+    # Function to create list and dictionary of getting photos from the user ID account.
+    def dict_list_photos_VK(num_photos=5):
+        """This is the method creating list and dictionary for getting photos from the user ID account."""
+        dict_id_photos = {}
         while True:
             list_id_photos = []
             count_photos = 0
+            all_photos = VkGetPhoto.get_photos_VK()
             try:
-                for item in VkGetPhoto.get_photos_VK():
+                for item in all_photos:
                     list_id_photos.append(item['id'])
                     list_id_photos = list_id_photos[::-1]       # sorted from newest to oldest
                     count_photos += 1
@@ -99,12 +102,17 @@ class VkGetPhoto:
                 list_id_photos = list_id_photos[:num_photos]
                 print(f'The default value is 5 photos. You requested {num_photos}. The list of photos is: {list_id_photos}.')
                 break
-        return list_id_photos
+        for i in list_id_photos:
+            for j in all_photos:
+                if j['id'] == i:
+                    dict_id_photos[i] = j
+        return dict_id_photos
 
     # Function for the selection getting profile photos from the user ID account with the maximum sizes.
-    def selection_get_photos():
+    def selection_get_photos(num_photos=5):
         """It is the method for the selection getting profile photos from the user ID account with the maximum sizes"""
-        
+        pass
+        pprint(None)
         return None
 
     def my_function_VK_6():
@@ -137,6 +145,6 @@ def progress_bar():
 
 
 # testing part:
-# VkGetPhoto.get_photos_VK() - ?????
+# VkGetPhoto.get_photos_VK() - successfully
 # print(VkGetPhoto.convert_date(1562944607)) - successfully
-VkGetPhoto.profile_list_photos_VK(10)
+# VkGetPhoto.dict_list_photos_VK(3) - successfully
