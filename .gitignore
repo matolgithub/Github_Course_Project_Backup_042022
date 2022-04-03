@@ -6,6 +6,6 @@ tmp.log
 .DS_Store
 /env
 /.env
-token.txt
+token*.txt
 *.docx
 *.xls
