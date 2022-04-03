@@ -4,7 +4,8 @@ import time
 import json
 import PySimpleGUI as sg
 from pprint import pprint
-from datetime import date, datetime
+from datetime import datetime
+import urllib.request
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -16,7 +17,7 @@ class VkGetPhoto:
     # Token VK function. 
     def token_VK():
         """It is the token function for the access to VK."""
-        with open('token.txt', 'r') as file:
+        with open('token_VK.txt', 'r') as file:
             token = file.read().strip()    
         return token
 
@@ -141,12 +142,24 @@ class VkGetPhoto:
         new_name_dict = VkGetPhoto.selection_get_photos()
         while True:
             for i, j in new_name_dict.items():
+                count_same = 0
                 for k, l in new_name_dict.items():
                     if j['file_name'] == l['file_name'] and i != k:
-                        j['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
-                        l['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
+                        count_same += 1
+                        j['file_name'] = str(str(j['likes']) + '_likes' + f"_{count_same}" + '-' + j['date'] + '.jpg')
+                        count_same += 1
+                        l['file_name'] = str(str(j['likes']) + '_likes' + f"_{count_same}" + '-' + j['date'] + '.jpg')
             break
         return new_name_dict    
+
+    # Copy files from VK - function.
+    def copy_photos(name_folder):
+        """This is copy files from VK - function."""
+        copy_photos = VkGetPhoto.same_likes_func()
+        for i in copy_photos.values():
+            url = i['url']
+            urllib.request.urlretrieve(url, str('/' + name_folder + '/' + i["file_name"]))
+        print("The photo files successfully copied!")
 
     # Creating json-file function.
     def json_create():
@@ -171,20 +184,36 @@ class VkGetPhoto:
         pprint(read_json)
 
 class YandexUploader:
+    # ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
     def __init__(self, token_ya: str):
         self.token_ya = token_ya
+
+    # Token Yandex Disk function. 
+    def token_Ya():
+        """It is the token function for the access to Yandex Disk."""
+        with open('token_YaDisk.txt', 'r') as file:
+            token_ya = file.read().strip()    
+        return token_ya
+
+    def get_headers(self):  
+        return {'Content-Type' : 'application/json', 'Authorization' : f'OAuth {self.token_ya}'}
     
-    def my_function_YA_1():
-        """It is a docstring"""
-        return None
+    # Upload method photos getting from VK to Disk.Yandex
+    def upload(self, file_path: str):
+        """This is the upload method photos getting from VK to Disk.Yandex."""
 
-    def my_function_YA_2():
-        """It is a docstring"""
-        return None
-
-    def my_function_YA_3():
-        """It is a docstring"""
-        return None
+        file_path = os.path.normpath(file_path)
+        upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
+        headers = self.get_headers()
+        params = {'path' : file_path, 'overwrite' : 'true'}
+        response = requests.get(upload_url, params=params, headers=headers)
+        href_json = response.json()
+        data = {"file": open(file_path, 'rb')}
+        response_upload = requests.post(url=href_json['href'], files=data)
+        pprint(response.json())
+        print(f'The result of PUT-operation is: "{response_upload.status_code}". Successfuly!')
+        
+    
 
 # Не забыть включить в блок выполнения программы прогресс-бар!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def progress_bar():
@@ -201,5 +230,8 @@ def progress_bar():
 # VkGetPhoto.dict_list_photos_VK(10)  - successfully
 # VkGetPhoto.selection_get_photos()  - successfully
 # VkGetPhoto.same_likes_func()  - successfully
-# VkGetPhoto.json_create() - successfully
+# VkGetPhoto.json_create()  - successfully
 # VkGetPhoto.read_json_file('file_photos.json') - successfully
+VkGetPhoto.copy_photos('VK_photos')
+# if __name__ == '__main__':
+#     result = YandexUploader(YandexUploader.token_Ya()).upload('requirements.txt')
