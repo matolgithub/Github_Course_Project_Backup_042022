@@ -1,6 +1,7 @@
 import os
 import requests
 import time 
+import json
 import PySimpleGUI as sg
 from pprint import pprint
 from datetime import date, datetime
@@ -141,13 +142,26 @@ class VkGetPhoto:
         while True:
             for i, j in new_name_dict.items():
                 for k, l in new_name_dict.items():
-                    if j['file_name'] == l['file_name'] and i != k:    
-                        # j['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
+                    if j['file_name'] == l['file_name'] and i != k:
                         j['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
                         l['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
             break
-        pprint(new_name_dict)
         return new_name_dict    
+
+    # Creating json-file function.
+    def json_create():
+        """This is creating json-file function."""
+        data_dict = VkGetPhoto.same_likes_func()
+        data_json = []
+        for i in data_dict.values():
+            list_json_item = {}
+            list_json_item['file_name'] = i['file_name']
+            list_json_item['size'] = i['max_photo_type']
+            data_json.append(list_json_item)
+        with open("file_photos.json", "w") as write_file:
+            json.dump(data_json, write_file)
+        print("The json file with photos info successfully created!")
+        pprint(data_json)
 
 class YandexUploader:
     def __init__(self, token_ya: str):
@@ -180,3 +194,4 @@ def progress_bar():
 # VkGetPhoto.dict_list_photos_VK(10)  - successfully
 # VkGetPhoto.selection_get_photos()  - successfully
 # VkGetPhoto.same_likes_func()  - successfully
+VkGetPhoto.json_create()
