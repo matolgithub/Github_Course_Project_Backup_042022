@@ -122,11 +122,14 @@ class VkGetPhoto:
                             if half_perim > max_perim:
                                 max_perim = half_perim
                                 type_max_photo = j['type']
+                        likes_count = result_photos[i]['likes']['count']
                         max_photos_dict[i] = {
+                            'url' : j['url'],    
                             'max_half_perim' : max_perim,
                             'max_photo_type' : type_max_photo,
-                            'likes' : result_photos[i]['likes']['count'],
-                            'date' : VkGetPhoto.convert_date(result_photos[i]['date'])
+                            'date' : VkGetPhoto.convert_date(result_photos[i]['date']),
+                            'likes' : likes_count,
+                            'file_name' : f'{likes_count}.jpg'
                         }     
                 break
         pprint(max_photos_dict)
