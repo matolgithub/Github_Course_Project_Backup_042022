@@ -161,7 +161,7 @@ class VkGetPhoto:
         os.chdir(name_folder)
         for i in copy_photos.values():
             url = i['url']
-            urllib.request.urlretrieve(url, str(name_folder + i["file_name"]))
+            urllib.request.urlretrieve(url, str(i["file_name"]))
         print("The photo files successfully copied!")
 
     # Creating json-file function.
@@ -201,23 +201,21 @@ class YandexUploader:
     def get_headers(self):  
         return {'Content-Type' : 'application/json', 'Authorization' : f'OAuth {self.token_ya}'}
     
-    # Upload method photos getting from VK to Disk.Yandex
-    def upload(self, file_path: str):
-        """This is the upload method photos getting from VK to Disk.Yandex."""
-
-        file_path = os.path.normpath(file_path)
-        upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
-        headers = self.get_headers()
-        params = {'path' : file_path, 'overwrite' : 'true'}
-        response = requests.get(upload_url, params=params, headers=headers)
-        href_json = response.json()
-        data = {"file": open(file_path, 'rb')}
-        response_upload = requests.post(url=href_json['href'], files=data)
-        pprint(response.json())
-        print(f'The result of PUT-operation is: "{response_upload.status_code}". Successfuly!')
-        
-    
-
+    # Upload method photos getting from VK move to Disk.Yandex
+    def upload(self, folder_path: str):
+        """This is the upload method photos getting from VK move to Disk.Yandex."""
+        file_path = os.listdir(folder_path)
+        for i in file_path:
+            upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
+            headers = self.get_headers()
+            params = {'path' : i, 'overwrite' : 'true'}
+            response = requests.get(upload_url, params=params, headers=headers)
+            href_json = response.json()
+            data = {"file": open(f'{os.path.basename(folder_path)}/{i}', "rb")}
+            response_upload = requests.post(url=href_json['href'], files=data)
+            print(f'The result of POST-operation is: "{response_upload.status_code}". Photo - {i} moved successfuly!')
+         
+         
 # Не забыть включить в блок выполнения программы прогресс-бар!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def progress_bar():
     """It is the indicator function to visualize the process of program execution."""
@@ -236,5 +234,4 @@ def progress_bar():
 # VkGetPhoto.json_create()  - successfully
 # VkGetPhoto.read_json_file('file_photos.json') - successfully
 # VkGetPhoto.copy_photos('VK_photos') - successfully
-# if __name__ == '__main__':
-#     result = YandexUploader(YandexUploader.token_Ya()).upload('requirements.txt')
+YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
