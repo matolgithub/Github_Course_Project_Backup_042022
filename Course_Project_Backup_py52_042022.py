@@ -156,9 +156,12 @@ class VkGetPhoto:
     def copy_photos(name_folder):
         """This is copy files from VK - function."""
         copy_photos = VkGetPhoto.same_likes_func()
+        if not os.path.isdir(name_folder):
+            os.mkdir(name_folder)
+        os.chdir(name_folder)
         for i in copy_photos.values():
             url = i['url']
-            urllib.request.urlretrieve(url, str('/' + name_folder + '/' + i["file_name"]))
+            urllib.request.urlretrieve(url, str(name_folder + i["file_name"]))
         print("The photo files successfully copied!")
 
     # Creating json-file function.
@@ -232,6 +235,6 @@ def progress_bar():
 # VkGetPhoto.same_likes_func()  - successfully
 # VkGetPhoto.json_create()  - successfully
 # VkGetPhoto.read_json_file('file_photos.json') - successfully
-VkGetPhoto.copy_photos('VK_photos')
+# VkGetPhoto.copy_photos('VK_photos') - successfully
 # if __name__ == '__main__':
 #     result = YandexUploader(YandexUploader.token_Ya()).upload('requirements.txt')
