@@ -161,7 +161,14 @@ class VkGetPhoto:
         with open("file_photos.json", "w") as write_file:
             json.dump(data_json, write_file)
         print("The json file with photos info successfully created!")
-        pprint(data_json)
+        return data_json
+
+    # Read json-file function.
+    def read_json_file(file_name_json):
+        """This is for reading json-file function."""
+        with open(file_name_json, 'r', encoding='utf-8') as file:
+            read_json = json.load(file)
+        pprint(read_json)
 
 class YandexUploader:
     def __init__(self, token_ya: str):
@@ -194,4 +201,5 @@ def progress_bar():
 # VkGetPhoto.dict_list_photos_VK(10)  - successfully
 # VkGetPhoto.selection_get_photos()  - successfully
 # VkGetPhoto.same_likes_func()  - successfully
-VkGetPhoto.json_create()
+# VkGetPhoto.json_create() - successfully
+# VkGetPhoto.read_json_file('file_photos.json') - successfully
