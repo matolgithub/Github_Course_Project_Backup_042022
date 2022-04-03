@@ -3,7 +3,7 @@ import requests
 import time 
 import PySimpleGUI as sg
 from pprint import pprint
-from datetime import datetime
+from datetime import date, datetime
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -132,12 +132,22 @@ class VkGetPhoto:
                             'file_name' : f'{likes_count}.jpg'
                         }     
                 break
-        pprint(max_photos_dict)
         return max_photos_dict
 
-    def my_function_VK_6():
-        """It is a docstring"""
-        return None    
+    # Rename filename function for the files with same numbers of likes.
+    def same_likes_func():
+        """It is rename file name method for the files with same numbers of likes."""
+        new_name_dict = VkGetPhoto.selection_get_photos()
+        while True:
+            for i, j in new_name_dict.items():
+                for k, l in new_name_dict.items():
+                    if j['file_name'] == l['file_name'] and i != k:    
+                        # j['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
+                        j['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
+                        l['file_name'] = str(str(j['likes']) + '_likes' + ':' + j['date'] + '.jpg')
+            break
+        pprint(new_name_dict)
+        return new_name_dict    
 
 class YandexUploader:
     def __init__(self, token_ya: str):
@@ -168,4 +178,5 @@ def progress_bar():
 # VkGetPhoto.get_photos_VK() - successfully
 # print(VkGetPhoto.convert_date(1562944607)) - successfully
 # VkGetPhoto.dict_list_photos_VK(10)  - successfully
-VkGetPhoto.selection_get_photos()
+# VkGetPhoto.selection_get_photos()  - successfully
+# VkGetPhoto.same_likes_func()  - successfully
