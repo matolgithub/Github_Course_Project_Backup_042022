@@ -10,7 +10,6 @@ import urllib.request
 
 
 class VkGetPhoto:
-    # ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
     def __init__(self, token: str):
         self.token = token
 
@@ -108,6 +107,7 @@ class VkGetPhoto:
     def selection_get_photos():
         """It is the method for the selection getting photos from the user ID account with the maximum sizes."""
         max_photos_dict = {}
+        list_VK_type = ['w', 'z', 'y', 'x', 'r', 'q','p','o', 'm', 's']
         while True:
             inp_num_photos = input('Input the numbers of photos you need (by default "5"): ')
             try:
@@ -120,20 +120,32 @@ class VkGetPhoto:
                     type_max_photo = ''
                     if result_photos[i]['sizes'] != []:
                         for j in result_photos[i]['sizes']:
-                            half_perim = (int(j['height']) + int(j['width']))
-                            if half_perim > max_perim:
-                                max_perim = half_perim
-                                type_max_photo = j['type']
-                        likes_count = result_photos[i]['likes']['count']
-                        max_photos_dict[i] = {
-                            'url' : j['url'],    
-                            'max_half_perim' : max_perim,
-                            'max_photo_type' : type_max_photo,
-                            'date' : VkGetPhoto.convert_date(result_photos[i]['date']),
-                            'likes' : likes_count,
-                            'file_name' : f'{likes_count}.jpg'
-                        }     
-                break
+                            if j['height'] == 0 and j['width'] == 0:
+                                for type_photo in list_VK_type:
+                                    if j['type'] == type_photo:
+                                        type_max_photo = type_photo
+                                        max_perim = (int(j['height']) + int(j['width']))
+                                        likes_count = result_photos[i]['likes']['count']
+                                        print(type_max_photo)
+                                        break
+                            else:
+                                half_perim = (int(j['height']) + int(j['width']))
+                                if half_perim > max_perim:
+                                    max_perim = half_perim
+                                    type_max_photo = j['type']
+                            likes_count = result_photos[i]['likes']['count']
+                            max_photos_dict[i] = {
+                                'url' : j['url'],    
+                                'max_half_perim' : max_perim,
+                                'max_photo_type' : type_max_photo,
+                                'date' : VkGetPhoto.convert_date(result_photos[i]['date']),
+                                'likes' : likes_count,
+                                'file_name' : f'{likes_count}.jpg'
+                            }
+                    else:
+                        print("List 'sizes' is empty.")     
+                break  
+        pprint(max_photos_dict)
         return max_photos_dict
 
     # Rename filename function for the files with same numbers of likes.
@@ -152,22 +164,22 @@ class VkGetPhoto:
             break
         return new_name_dict    
 
-    # Copy files from VK - function.
+    # Copy files from VK and create json file - function.
     def copy_photos(name_folder):
-        """This is copy files from VK - function."""
+        """This is copy files from VK and create json file - function."""
         copy_photos = VkGetPhoto.same_likes_func()
+        VkGetPhoto.json_create(copy_photos)
         if not os.path.isdir(name_folder):
             os.mkdir(name_folder)
         os.chdir(name_folder)
         for i in copy_photos.values():
             url = i['url']
             urllib.request.urlretrieve(url, str(i["file_name"]))
-        print("The photo files successfully copied!")
+        print(f"The photo files in {name_folder} successfully copied!")
 
     # Creating json-file function.
-    def json_create():
+    def json_create(data_dict):
         """This is creating json-file function."""
-        data_dict = VkGetPhoto.same_likes_func()
         data_json = []
         for i in data_dict.values():
             list_json_item = {}
@@ -187,7 +199,6 @@ class VkGetPhoto:
         pprint(read_json)
 
 class YandexUploader:
-    # ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
     def __init__(self, token_ya: str):
         self.token_ya = token_ya
 
@@ -224,6 +235,12 @@ def progress_bar():
         sg.one_line_progress_meter('Progress bar.', i+1, len(mylist), 'It is indicator of progress.', orientation='h', bar_color='red', no_titlebar=True, size=(60,10), no_button=True)
         time.sleep(1)
 
+if __name__ == '__main__':
+    VkGetPhoto.copy_photos('VK_photos')
+    os.chdir('..')
+    YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
+
+
 
 # testing part:
 # VkGetPhoto.get_photos_VK() - successfully
@@ -234,4 +251,4 @@ def progress_bar():
 # VkGetPhoto.json_create()  - successfully
 # VkGetPhoto.read_json_file('file_photos.json') - successfully
 # VkGetPhoto.copy_photos('VK_photos') - successfully
-YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
+# YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')  - successfully
