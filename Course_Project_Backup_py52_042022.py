@@ -6,12 +6,16 @@ import PySimpleGUI as sg
 from pprint import pprint
 from datetime import datetime
 import urllib.request
+from tkinter import *
+from tkinter import messagebox
+from tkinter.ttk import Combobox
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class VkGetPhoto:
-    def __init__(self, token: str):
+    def __init__(self, token: str, entry_form):
         self.token = token
+        self.entry_form = entry_form
 
     # Token VK function. 
     def token_VK():
@@ -20,11 +24,29 @@ class VkGetPhoto:
             token = file.read().strip()    
         return token
 
+
+    def clear():
+        ID_entry.delete(0, END)
+        numph_entry.delete(0, END)   
+        
+    def get_data_form():
+        data_form_dict = {}
+        input_ID = ID_entry.get()
+        input_numph = numph_entry.get()
+        input_select = combo.get()
+        data_form_dict['get_form_ID'] = input_ID
+        data_form_dict['get_form_numph'] = input_numph
+        data_form_dict['get_form_select'] = input_select
+        messagebox.showinfo("Python - result form", f'Your input:\nID: {input_ID}, numbers of photo: {input_numph},\nalbum selection: {input_select}.')
+        return data_form_dict
+
+ 
     # Get ID method of VK user with digits check and VK base check.
     def get_ID_VK():
         """It is the get ID method of VK user with digits and VK base checking."""
         while True:
-            owner_id = input('Please, input the ID VK user (attention: only digits!): ')
+            owner_id = VkGetPhoto.inp_ID_form()
+            # owner_id = input('Please, input the ID VK user (attention: only digits!): ')
             if owner_id.isdigit():
                 token = VkGetPhoto.token_VK()
                 url = 'https://api.vk.com/method/users.get'
@@ -236,9 +258,40 @@ def progress_bar():
         time.sleep(1)
 
 if __name__ == '__main__':
-    VkGetPhoto.copy_photos('VK_photos')
-    os.chdir('..')
-    YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
+    window = Tk()
+    window.title("Python - input ID user form.")
+
+    input_label_ID = Label(text="Input 'owner_id' VK-user (by default: Bulgakov)     or    'album_id': ", fg='red')
+    input_label_ID.grid(row=2, column=0, sticky="w")
+    ID_entry = Entry(background='yellow', selectbackground='blue', state='normal')
+    ID_entry.grid(row=2, column=1, padx=5, pady=5)
+    ID_entry.insert(0, "552934290")
+
+    input_label_numph = Label(text='Input the numbers of photos you need (by default "5"): ')
+    input_label_numph.grid(row=3, column=0, sticky="w")
+    numph_entry = Entry(background='yellow', selectbackground='blue', state='normal')
+    numph_entry.grid(row=3, column=1, padx=5, pady=5)
+    numph_entry.insert(0, "5")
+
+    combo = Combobox(window)  
+    combo['values'] = ('"profile" photos', '"wall" photos', 'album ID')  
+    combo.current(0)
+    combo.grid(row=4,column=1, padx=5, pady=5)  
+    input_label_albID = Label(text="Choose one from three items: profile, wall or album ID (by default: 'profile'): ")
+    input_label_albID.grid(row=4, column=0, sticky="w")  
+
+    display_button = Button(text="Apply", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.get_data_form)
+    clear_button = Button(text="Delete", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.clear)
+    close_button = Button(text="Close form", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
+    display_button.grid(row=5, column=3, padx=5, pady=5, sticky="e")
+    clear_button.grid(row=5, column=4, padx=5, pady=5, sticky="e")
+    close_button.grid(row=5, column=5, padx=5, pady=5, sticky="e")
+
+    window.mainloop() 
+    # VkGetPhoto.copy_photos('VK_photos')
+    # os.chdir('..')
+    # YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
+    
 
 
 
