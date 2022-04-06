@@ -1,4 +1,5 @@
 import os
+from urllib.error import HTTPError
 import requests
 import time 
 import json
@@ -45,7 +46,7 @@ class VkGetPhoto:
         return owner_id
 
     # Function for the getting profile photos by ID user and type/number albums. 
-    def get_photos_VK():
+    def get_photos_VK(num_count):
         """This is function to get profile photos by ID user and type/number albums."""
         while True:
             choice_album = input('Please, input type album ("profile" or "wall") or give ID of album: ')
@@ -62,7 +63,7 @@ class VkGetPhoto:
             'album_id' : choice_album,
             'extended' : '1',
             'photo_sizes' : '1',
-            'count' : '1000'
+            'count' : num_count
         }
         res_get_photos = requests.get(url=url, params=params)
         try:
@@ -85,7 +86,7 @@ class VkGetPhoto:
             list_id_photos = []
             count_photos = 0
             try:
-                all_photos = VkGetPhoto.get_photos_VK()
+                all_photos = VkGetPhoto.get_photos_VK(num_photos)
                 for item in all_photos:
                     list_id_photos.append(item['id'])
                     list_id_photos = list_id_photos[::-1]       # sorted from newest to oldest
@@ -126,7 +127,6 @@ class VkGetPhoto:
                                         type_max_photo = type_photo
                                         max_perim = (int(j['height']) + int(j['width']))
                                         likes_count = result_photos[i]['likes']['count']
-                                        print(type_max_photo)
                                         break
                             else:
                                 half_perim = (int(j['height']) + int(j['width']))
@@ -166,7 +166,6 @@ class VkGetPhoto:
     # Copy files from VK and create json file - function.
     def copy_photos(name_folder):
         """This is copy files from VK and create json file - function."""
-        time_start = datetime.now()
         count_files = 0
         count_percent = 0
         copy_photos = VkGetPhoto.same_likes_func()
@@ -174,14 +173,20 @@ class VkGetPhoto:
         if not os.path.isdir(name_folder):
             os.mkdir(name_folder)
         os.chdir(name_folder)
+        time_start = datetime.now()
         for i in copy_photos.values():
             url = i['url']
-            urllib.request.urlretrieve(url, str(i["file_name"]))
-            count_files += 1
-            count_percent += round((100 / len(copy_photos)), 1)
-            print("#" *  int(count_percent/5), f'{count_percent}%', end='')
+            try:
+                urllib.request.urlretrieve(url, str(i["file_name"]))
+            except HTTPError:
+                print('Terribly sorry, but there is HTTP problem!')
+            else:        
+                count_files += 1
+                count_percent += round((100 / len(copy_photos)), 1)
+                print("#" *  int(count_percent/5), f'{count_percent}%', end='')
         time_end = datetime.now()  
-        print(f" The copying photos from VK successfully complete in {name_folder}! Start: {time_start}, end: {time_end}.")
+        period = time_end - time_start
+        print(f" The copying photos from VK successfully complete in {name_folder}! Start: {time_start}, end: {time_end}, total run time: {period}.")
 
     # Creating json-file function.
     def json_create(data_dict):
@@ -244,13 +249,15 @@ if __name__ == '__main__':
     os.chdir('..')
     YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
 
-# testing part:
-# VkGetPhoto.get_photos_VK() - successfully
-# print(VkGetPhoto.convert_date(1562944607)) - successfully
-# VkGetPhoto.dict_list_photos_VK(10)  - successfully
-# VkGetPhoto.selection_get_photos()  - successfully
-# VkGetPhoto.same_likes_func()  - successfully
-# VkGetPhoto.json_create()  - successfully
-# VkGetPhoto.read_json_file('file_photos.json') - successfully
-# VkGetPhoto.copy_photos('VK_photos') - successfully
-# YandexUploader(YandexUploader.token_Ya()).upload('VK_photos') - successfully
+
+
+    # testing part:
+    # VkGetPhoto.get_photos_VK(5)- successfully
+    # print(VkGetPhoto.convert_date(1562944607)) - successfully
+    # VkGetPhoto.dict_list_photos_VK(10)  - successfully
+    # VkGetPhoto.selection_get_photos()  - successfully
+    # VkGetPhoto.same_likes_func()  - successfully
+    # VkGetPhoto.json_create()  - successfully
+    # VkGetPhoto.read_json_file('file_photos.json') - successfully
+    # VkGetPhoto.copy_photos('VK_photos') - successfully
+    # YandexUploader(YandexUploader.token_Ya()).upload('VK_photos') - successfully
