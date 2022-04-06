@@ -4,7 +4,7 @@ import time
 import json
 import PySimpleGUI as sg
 from pprint import pprint
-from datetime import datetime
+from datetime import date, datetime
 import urllib.request
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -166,6 +166,7 @@ class VkGetPhoto:
     # Copy files from VK and create json file - function.
     def copy_photos(name_folder):
         """This is copy files from VK and create json file - function."""
+        time_start = datetime.now()
         count_files = 0
         count_percent = 0
         copy_photos = VkGetPhoto.same_likes_func()
@@ -179,7 +180,8 @@ class VkGetPhoto:
             count_files += 1
             count_percent += round((100 / len(copy_photos)), 1)
             print("#" *  int(count_percent/5), f'{count_percent}%', end='')
-        print(f" The copying photos from VK successfully complete in {name_folder}!")
+        time_end = datetime.now()  
+        print(f" The copying photos from VK successfully complete in {name_folder}! Start: {time_start}, end: {time_end}.")
 
     # Creating json-file function.
     def json_create(data_dict):
@@ -212,19 +214,17 @@ class YandexUploader:
         with open('token_YaDisk.txt', 'r') as file:
             token_ya = file.read().strip()    
         return token_ya
-
-    def get_headers(self):  
-        return {'Content-Type' : 'application/json', 'Authorization' : f'OAuth {self.token_ya}'}
     
     # Upload method photos getting from VK move to Disk.Yandex
     def upload(self, folder_path: str):
         """This is the upload method photos getting from VK move to Disk.Yandex."""
+        time_start = datetime.now()
         file_path = os.listdir(folder_path)
         count_files = 0
         count_percent = 0
         for i in file_path:
             upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
-            headers = self.get_headers()
+            headers = {'Content-Type' : 'application/json', 'Authorization' : f'OAuth {self.token_ya}'}
             params = {'path' : i, 'overwrite' : 'true'}
             response = requests.get(upload_url, params=params, headers=headers)
             href_json = response.json()
@@ -234,22 +234,15 @@ class YandexUploader:
             count_percent += round((100 / len(file_path)), 1)
             # print(f'The result of POST-operation is: "{response_upload.status_code}". Photo - {i} moved successfuly! File number: {count_files}; finished: {count_percent} percents.')
             print("*" *  int(count_percent/5), f'{count_percent}%', end='')
-        print(' Copying files to Disk.Yandex - complete!')
+        time_end = datetime.now()
+        period = time_end - time_start
+        print(f' Copying files to Disk.Yandex - complete! Start: {time_start}, end: {time_end}, total run time: {period}.')
          
          
-# Не забыть включить в блок выполнения программы прогресс-бар!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-def progress_bar():
-    """It is the indicator function to visualize the process of program execution."""
-    mylist = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    for i, item in enumerate(mylist):
-        sg.one_line_progress_meter('Progress bar.', i+1, len(mylist), 'It is indicator of progress.', orientation='h', bar_color='red', no_titlebar=True, size=(60,10), no_button=True)
-        time.sleep(1)
-
 if __name__ == '__main__':
     VkGetPhoto.copy_photos('VK_photos')
     os.chdir('..')
     YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
-
 
 # testing part:
 # VkGetPhoto.get_photos_VK() - successfully
