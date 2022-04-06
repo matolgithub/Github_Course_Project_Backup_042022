@@ -6,16 +6,12 @@ import PySimpleGUI as sg
 from pprint import pprint
 from datetime import datetime
 import urllib.request
-from tkinter import *
-from tkinter import messagebox
-from tkinter.ttk import Combobox
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class VkGetPhoto:
-    def __init__(self, token: str, entry_form):
+    def __init__(self, token: str):
         self.token = token
-        self.entry_form = entry_form
 
     # Token VK function. 
     def token_VK():
@@ -24,29 +20,11 @@ class VkGetPhoto:
             token = file.read().strip()    
         return token
 
-
-    def clear():
-        ID_entry.delete(0, END)
-        numph_entry.delete(0, END)   
-        
-    def get_data_form():
-        data_form_dict = {}
-        input_ID = ID_entry.get()
-        input_numph = numph_entry.get()
-        input_select = combo.get()
-        data_form_dict['get_form_ID'] = input_ID
-        data_form_dict['get_form_numph'] = input_numph
-        data_form_dict['get_form_select'] = input_select
-        messagebox.showinfo("Python - result form", f'Your input:\nID: {input_ID}, numbers of photo: {input_numph},\nalbum selection: {input_select}.')
-        return data_form_dict
-
- 
     # Get ID method of VK user with digits check and VK base check.
     def get_ID_VK():
         """It is the get ID method of VK user with digits and VK base checking."""
         while True:
-            owner_id = VkGetPhoto.inp_ID_form()
-            # owner_id = input('Please, input the ID VK user (attention: only digits!): ')
+            owner_id = input('Please, input the ID VK user (attention: only digits!): ')
             if owner_id.isdigit():
                 token = VkGetPhoto.token_VK()
                 url = 'https://api.vk.com/method/users.get'
@@ -167,7 +145,6 @@ class VkGetPhoto:
                     else:
                         print("List 'sizes' is empty.")     
                 break  
-        pprint(max_photos_dict)
         return max_photos_dict
 
     # Rename filename function for the files with same numbers of likes.
@@ -189,6 +166,8 @@ class VkGetPhoto:
     # Copy files from VK and create json file - function.
     def copy_photos(name_folder):
         """This is copy files from VK and create json file - function."""
+        count_files = 0
+        count_percent = 0
         copy_photos = VkGetPhoto.same_likes_func()
         VkGetPhoto.json_create(copy_photos)
         if not os.path.isdir(name_folder):
@@ -197,7 +176,10 @@ class VkGetPhoto:
         for i in copy_photos.values():
             url = i['url']
             urllib.request.urlretrieve(url, str(i["file_name"]))
-        print(f"The photo files in {name_folder} successfully copied!")
+            count_files += 1
+            count_percent += round((100 / len(copy_photos)), 1)
+            print("#" *  int(count_percent/5), f'{count_percent}%', end='')
+        print(f" The copying photos from VK successfully complete in {name_folder}!")
 
     # Creating json-file function.
     def json_create(data_dict):
@@ -218,7 +200,7 @@ class VkGetPhoto:
         """This is for reading json-file function."""
         with open(file_name_json, 'r', encoding='utf-8') as file:
             read_json = json.load(file)
-        pprint(read_json)
+        return read_json
 
 class YandexUploader:
     def __init__(self, token_ya: str):
@@ -238,6 +220,8 @@ class YandexUploader:
     def upload(self, folder_path: str):
         """This is the upload method photos getting from VK move to Disk.Yandex."""
         file_path = os.listdir(folder_path)
+        count_files = 0
+        count_percent = 0
         for i in file_path:
             upload_url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
             headers = self.get_headers()
@@ -246,53 +230,25 @@ class YandexUploader:
             href_json = response.json()
             data = {"file": open(f'{os.path.basename(folder_path)}/{i}', "rb")}
             response_upload = requests.post(url=href_json['href'], files=data)
-            print(f'The result of POST-operation is: "{response_upload.status_code}". Photo - {i} moved successfuly!')
+            count_files += 1
+            count_percent += round((100 / len(file_path)), 1)
+            # print(f'The result of POST-operation is: "{response_upload.status_code}". Photo - {i} moved successfuly! File number: {count_files}; finished: {count_percent} percents.')
+            print("*" *  int(count_percent/5), f'{count_percent}%', end='')
+        print(' Copying files to Disk.Yandex - complete!')
          
          
 # Не забыть включить в блок выполнения программы прогресс-бар!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def progress_bar():
     """It is the indicator function to visualize the process of program execution."""
-    mylist = [1,2,3,4,5,6,7,8]
+    mylist = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     for i, item in enumerate(mylist):
         sg.one_line_progress_meter('Progress bar.', i+1, len(mylist), 'It is indicator of progress.', orientation='h', bar_color='red', no_titlebar=True, size=(60,10), no_button=True)
         time.sleep(1)
 
 if __name__ == '__main__':
-    window = Tk()
-    window.title("Python - input ID user form.")
-
-    input_label_ID = Label(text="Input 'owner_id' VK-user (by default: Bulgakov)     or    'album_id': ", fg='red')
-    input_label_ID.grid(row=2, column=0, sticky="w")
-    ID_entry = Entry(background='yellow', selectbackground='blue', state='normal')
-    ID_entry.grid(row=2, column=1, padx=5, pady=5)
-    ID_entry.insert(0, "552934290")
-
-    input_label_numph = Label(text='Input the numbers of photos you need (by default "5"): ')
-    input_label_numph.grid(row=3, column=0, sticky="w")
-    numph_entry = Entry(background='yellow', selectbackground='blue', state='normal')
-    numph_entry.grid(row=3, column=1, padx=5, pady=5)
-    numph_entry.insert(0, "5")
-
-    combo = Combobox(window)  
-    combo['values'] = ('"profile" photos', '"wall" photos', 'album ID')  
-    combo.current(0)
-    combo.grid(row=4,column=1, padx=5, pady=5)  
-    input_label_albID = Label(text="Choose one from three items: profile, wall or album ID (by default: 'profile'): ")
-    input_label_albID.grid(row=4, column=0, sticky="w")  
-
-    display_button = Button(text="Apply", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.get_data_form)
-    clear_button = Button(text="Delete", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.clear)
-    close_button = Button(text="Close form", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
-    display_button.grid(row=5, column=3, padx=5, pady=5, sticky="e")
-    clear_button.grid(row=5, column=4, padx=5, pady=5, sticky="e")
-    close_button.grid(row=5, column=5, padx=5, pady=5, sticky="e")
-
-    window.mainloop() 
-    # VkGetPhoto.copy_photos('VK_photos')
-    # os.chdir('..')
-    # YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
-    
-
+    VkGetPhoto.copy_photos('VK_photos')
+    os.chdir('..')
+    YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
 
 
 # testing part:
@@ -304,4 +260,4 @@ if __name__ == '__main__':
 # VkGetPhoto.json_create()  - successfully
 # VkGetPhoto.read_json_file('file_photos.json') - successfully
 # VkGetPhoto.copy_photos('VK_photos') - successfully
-# YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')  - successfully
+# YandexUploader(YandexUploader.token_Ya()).upload('VK_photos') - successfully
