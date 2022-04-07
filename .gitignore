@@ -9,3 +9,5 @@ tmp.log
 token*.txt
 *.docx
 *.xls
+client_secret.json
+google_ser_key_py-52-060422.json

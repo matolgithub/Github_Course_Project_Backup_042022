@@ -7,6 +7,10 @@ import PySimpleGUI as sg
 from pprint import pprint
 from datetime import date, datetime
 import urllib.request
+from google.oauth2 import service_account
+from googleapiclient.http import MediaIoBaseDownload,MediaFileUpload
+from googleapiclient.discovery import build
+
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -243,13 +247,48 @@ class YandexUploader:
         period = time_end - time_start
         print(f' Copying files to Disk.Yandex - complete! Start: {time_start}, end: {time_end}, total run time: {period}.')
          
-         
+
+# ??????????????????????????????????????????????????????????????????????????????????????????????????????????
+class GoogleDriveUploader:
+    def __init__(self):
+        pass
+
+    def get_gd_files():    
+        SCOPES = ['https://www.googleapis.com/auth/drive']
+        SERVICE_ACCOUNT_FILE = 'google_ser_key_py-52-060422.json'
+        credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        service = build('drive', 'v3', credentials=credentials)
+
+        res_get_gd = service.files().list(pageSize=10, fields="nextPageToken, files(id, name, mimeType)").execute()
+        pprint(res_get_gd)
+        return res_get_gd
+
+    def upload_gd_files(name_folder):
+        SCOPES = ['https://www.googleapis.com/auth/drive']
+        SERVICE_ACCOUNT_FILE = 'google_ser_key_py-52-060422.json'
+        credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        service = build('drive', 'v3', credentials=credentials)
+
+        folder_id = '1Bxn_CsWNLjvVAH60oDeBWr2NKpJoydCb'
+        os.chdir(name_folder)
+        files_in_dir = os.listdir()
+        for i, files in enumerate(files_in_dir):
+            sg.one_line_progress_meter('Progress bar.', i+1, len(files_in_dir), 'It is indicator of progress.', orientation='h', bar_color='red', no_titlebar=True, size=(60,10), no_button=True)
+            name = files
+            file_metadata = {'name': name, 'parents': [folder_id]}
+            media = MediaFileUpload(files, resumable=True)
+            id_res_upload = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+            time.sleep(0.001)
+            pprint(id_res_upload)
+
+
 if __name__ == '__main__':
-    VkGetPhoto.copy_photos('VK_photos')
-    os.chdir('..')
-    YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
-
-
+    # VkGetPhoto.copy_photos('VK_photos')
+    # os.chdir('..')
+    # YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
+    # GoogleDriveUploader.get_gd_files()
+    GoogleDriveUploader.upload_gd_files('VK_photos')
+    
 
     # testing part:
     # VkGetPhoto.get_photos_VK(5)- successfully
