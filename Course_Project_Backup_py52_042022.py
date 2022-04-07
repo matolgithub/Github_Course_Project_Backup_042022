@@ -10,8 +10,33 @@ import urllib.request
 from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload,MediaFileUpload
 from googleapiclient.discovery import build
+from tkinter import *
+from tkinter import messagebox
+from tkinter.ttk import Combobox
 
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Main form function
+def main_form():
+    """It is main form function"""
+    window = Tk()
+    window.title("Python - input ID user form.")
+    input_label_ID = Label(text="Please, make a choice what are you going to do:")
+    input_label_ID.grid(row=1, column=0, sticky="w")
+    VK_YD_button = Button(text="From VK to Yandex Disk ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.VK_YD_from_but)
+    VK_GD_button = Button(text="From VK to Google Drive", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GoogleDriveUploader.upload_gd_files)
+    Ok_YD_button = Button(text="From Ok to Yandex Disk  ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
+    close_button = Button(text="Close form", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
+    VK_YD_button.grid(row=3, column=2, padx=10, pady=10, sticky="e")
+    VK_GD_button.grid(row=4, column=2, padx=10, pady=10, sticky="e")
+    Ok_YD_button.grid(row=5, column=2, padx=10, pady=10, sticky="e")
+    close_button.grid(row=6, column=3, padx=10, pady=10, sticky="e")
+    window.mainloop() 
+
+# Result form function
+def result_form():
+    """It is result form function"""
+    messagebox.showinfo('It is result form', 'Process is complete!')
 
 
 class VkGetPhoto:
@@ -213,6 +238,13 @@ class VkGetPhoto:
             read_json = json.load(file)
         return read_json
 
+    # Function copied files from VK to YD with push the button.
+    def VK_YD_from_but(folder_name='VK_photos'):
+        """It is function copied files from VK to YD with push the button."""
+        VkGetPhoto.copy_photos(folder_name)
+        os.chdir('..')
+        YandexUploader(YandexUploader.token_Ya()).upload(folder_name)
+
 class YandexUploader:
     def __init__(self, token_ya: str):
         self.token_ya = token_ya
@@ -225,7 +257,7 @@ class YandexUploader:
         return token_ya
     
     # Upload method photos getting from VK move to Disk.Yandex
-    def upload(self, folder_path: str):
+    def upload(self, folder_path='VK_photos'):
         """This is the upload method photos getting from VK move to Disk.Yandex."""
         time_start = datetime.now()
         file_path = os.listdir(folder_path)
@@ -246,9 +278,10 @@ class YandexUploader:
         time_end = datetime.now()
         period = time_end - time_start
         print(f' Copying files to Disk.Yandex - complete! Start: {time_start}, end: {time_end}, total run time: {period}.')
+        result_form()
          
 
-# ??????????????????????????????????????????????????????????????????????????????????????????????????????????
+# ?????????????????????????????????????????????????????????????????????????????????????????????????????????? если убрать класс поплывут функции!
 class GoogleDriveUploader:
     def __init__(self):
         pass
@@ -263,7 +296,7 @@ class GoogleDriveUploader:
         pprint(res_get_gd)
         return res_get_gd
 
-    def upload_gd_files(name_folder):
+    def upload_gd_files(name_folder='VK_photos'):
         SCOPES = ['https://www.googleapis.com/auth/drive']
         SERVICE_ACCOUNT_FILE = 'google_ser_key_py-52-060422.json'
         credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -279,15 +312,12 @@ class GoogleDriveUploader:
             media = MediaFileUpload(files, resumable=True)
             id_res_upload = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
             time.sleep(0.001)
-            pprint(id_res_upload)
+            print(id_res_upload)
+        result_form()
 
 
 if __name__ == '__main__':
-    # VkGetPhoto.copy_photos('VK_photos')
-    # os.chdir('..')
-    # YandexUploader(YandexUploader.token_Ya()).upload('VK_photos')
-    # GoogleDriveUploader.get_gd_files()
-    GoogleDriveUploader.upload_gd_files('VK_photos')
+    main_form()
     
 
     # testing part:
@@ -300,3 +330,5 @@ if __name__ == '__main__':
     # VkGetPhoto.read_json_file('file_photos.json') - successfully
     # VkGetPhoto.copy_photos('VK_photos') - successfully
     # YandexUploader(YandexUploader.token_Ya()).upload('VK_photos') - successfully
+    # GoogleDriveUploader.upload_gd_files() - successfully
+    # GoogleDriveUploader.get_gd_files() - successfully
