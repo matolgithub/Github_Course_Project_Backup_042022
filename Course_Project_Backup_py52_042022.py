@@ -1,4 +1,6 @@
 import os
+from sys import api_version
+from turtle import color
 from urllib.error import HTTPError
 import requests
 import time 
@@ -13,6 +15,15 @@ from googleapiclient.discovery import build
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Combobox
+from apiclient import errors
+from apiclient import http
+import io
+import pickle
+import os.path
+import shutil
+from mimetypes import MimeTypes
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -20,18 +31,22 @@ from tkinter.ttk import Combobox
 def main_form():
     """It is main form function"""
     window = Tk()
-    window.title("Python - input ID user form.")
-    input_label_ID = Label(text="Please, make a choice what are you going to do:")
-    input_label_ID.grid(row=1, column=0, sticky="w")
+    window["bg"] = "black"
+    window.title("Python - choice user form.")
+    input_label_ID = Label(text="Please, make a choice what are you going to do:", fg='white', bg='black')
+    input_label_ID.grid(row=1, column=1, sticky="w")
     VK_YD_button = Button(text="From VK to Yandex Disk ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.VK_YD_from_but)
     VK_GD_button = Button(text="From VK to Google Drive", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GoogleDriveUploader.upload_gd_files)
+    GD_YD_button = Button(text="From GD to Yandex Disk", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GoogleDriveUploader.get_gd_files)
     Ok_YD_button = Button(text="From Ok to Yandex Disk  ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
     close_button = Button(text="Close form", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
-    VK_YD_button.grid(row=3, column=2, padx=10, pady=10, sticky="e")
-    VK_GD_button.grid(row=4, column=2, padx=10, pady=10, sticky="e")
-    Ok_YD_button.grid(row=5, column=2, padx=10, pady=10, sticky="e")
-    close_button.grid(row=6, column=3, padx=10, pady=10, sticky="e")
-    window.mainloop() 
+    VK_YD_button.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+    VK_GD_button.grid(row=4, column=1, padx=10, pady=10, sticky="e")
+    GD_YD_button.grid(row=5, column=1, padx=10, pady=10, sticky="e")
+    Ok_YD_button.grid(row=6, column=1, padx=10, pady=10, sticky="e")
+    close_button.grid(row=7, column=3, padx=10, pady=10, sticky="e")
+    window.mainloop()
+
 
 # Result form function
 def result_form():
@@ -286,15 +301,23 @@ class GoogleDriveUploader:
     def __init__(self):
         pass
 
-    def get_gd_files():    
+    def get_gd_files(file_id='1YOYIoJDzH6QDYQsMRXxb3PXgm-pxbKRE', file_name='5.jpg', name_folder='./Files_from_GD'):    
         SCOPES = ['https://www.googleapis.com/auth/drive']
         SERVICE_ACCOUNT_FILE = 'google_ser_key_py-52-060422.json'
         credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
         service = build('drive', 'v3', credentials=credentials)
-
-        res_get_gd = service.files().list(pageSize=10, fields="nextPageToken, files(id, name, mimeType)").execute()
-        pprint(res_get_gd)
-        return res_get_gd
+        request = service.files().get_media(fileId=file_id)
+        new_f = io.BytesIO()
+        downloader = MediaIoBaseDownload(fd=new_f, request=request)
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+            print("Download in local folder complete successfully %d%%." % int(status.progress() * 100))
+        new_f.seek(0)
+        with open (os.path.join(name_folder, file_name), 'wb') as file:    
+            file.write(new_f.read())
+        YandexUploader.upload(YandexUploader(YandexUploader.token_Ya()), folder_path='Files_from_GD')
+        
 
     def upload_gd_files(name_folder='VK_photos'):
         SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -312,7 +335,8 @@ class GoogleDriveUploader:
             media = MediaFileUpload(files, resumable=True)
             id_res_upload = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
             time.sleep(0.001)
-            print(id_res_upload)
+            print(i + 1, f'file, ID: {id_res_upload}')
+        print(f'Process is complete. To Google Drive copied files:', i + 1)
         result_form()
 
 
