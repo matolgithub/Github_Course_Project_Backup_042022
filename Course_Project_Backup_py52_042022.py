@@ -1,59 +1,73 @@
+from hashlib import md5
 import os
-from sys import api_version
-from turtle import color
 from urllib.error import HTTPError
 import requests
 import time 
 import json
 import PySimpleGUI as sg
 from pprint import pprint
-from datetime import date, datetime
+from datetime import datetime
 import urllib.request
 from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload,MediaFileUpload
 from googleapiclient.discovery import build
 from tkinter import *
 from tkinter import messagebox
-from tkinter.ttk import Combobox
-from apiclient import errors
-from apiclient import http
 import io
-import pickle
 import os.path
-import shutil
-from mimetypes import MimeTypes
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-
-# Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# Main form function
-def main_form():
-    """It is main form function"""
-    window = Tk()
-    window["bg"] = "black"
-    window.title("Python - choice user form.")
-    input_label_ID = Label(text="Please, make a choice what are you going to do:", fg='white', bg='black')
-    input_label_ID.grid(row=1, column=1, sticky="w")
-    VK_YD_button = Button(text="From VK to Yandex Disk ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.VK_YD_from_but)
-    VK_GD_button = Button(text="From VK to Google Drive", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GoogleDriveUploader.upload_gd_files)
-    GD_YD_button = Button(text="From GD to Yandex Disk", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GoogleDriveUploader.get_gd_files)
-    Ok_YD_button = Button(text="From Ok to Yandex Disk  ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
-    close_button = Button(text="Close form", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
-    VK_YD_button.grid(row=3, column=1, padx=10, pady=10, sticky="e")
-    VK_GD_button.grid(row=4, column=1, padx=10, pady=10, sticky="e")
-    GD_YD_button.grid(row=5, column=1, padx=10, pady=10, sticky="e")
-    Ok_YD_button.grid(row=6, column=1, padx=10, pady=10, sticky="e")
-    close_button.grid(row=7, column=3, padx=10, pady=10, sticky="e")
-    window.mainloop()
 
 
-# Result form function
-def result_form():
-    """It is result form function"""
-    messagebox.showinfo('It is result form', 'Process is complete!')
+# The class of forms and windows.
+class Forms:
+    def __init__(self, window):
+        self.window = window
 
+    # Main form function
+    def main_form(self):
+        """It is main form function"""
+        window = Tk()
+        window["bg"] = "black"
+        window.title("Python - choice user form.")
+        input_label_ID = Label(text="Please, make a choice what are you going to do:", fg='white', bg='black')
+        input_label_ID.grid(row=1, column=1, sticky="w")
+        def VK_YD_run():
+            VkGetPhoto.VK_YD_from_but()
+            window.quit()
 
+        # It is run GD upload and close the window function.
+        def GD_Up_run():
+            GoogleDriveUploader.upload_gd_files()
+            window.quit()
+
+        # It is run GD getting and close the window function.
+        def GD_Get_run():
+            GoogleDriveUploader.get_gd_files()
+            window.quit()
+
+        # It is run Ok getting and close the window function.
+        def Ok_Get_run():
+            OkGetPhoto.download_ok()
+            window.quit()
+        
+        VK_YD_button = Button(text="From VK to Yandex Disk", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VK_YD_run)
+        VK_GD_button = Button(text="VK files to Google Drive", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GD_Up_run)
+        GD_YD_button = Button(text="From GD to Yandex Disk", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GD_Get_run)
+        Ok_YD_button = Button(text="From Ok to Yandex Disk", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=Ok_Get_run)
+        close_button = Button(text="Close form", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
+        VK_YD_button.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+        VK_GD_button.grid(row=4, column=1, padx=10, pady=10, sticky="e")
+        GD_YD_button.grid(row=5, column=1, padx=10, pady=10, sticky="e")
+        Ok_YD_button.grid(row=6, column=1, padx=10, pady=10, sticky="e")
+        close_button.grid(row=7, column=3, padx=10, pady=10, sticky="e")
+             
+        window.mainloop()
+
+    # Result form function
+    def result_form():
+        """It is result form function"""
+        messagebox.showinfo('It is result form', 'Process is complete!')
+
+# The class to get photos from Vk
 class VkGetPhoto:
     def __init__(self, token: str):
         self.token = token
@@ -260,6 +274,7 @@ class VkGetPhoto:
         os.chdir('..')
         YandexUploader(YandexUploader.token_Ya()).upload(folder_name)
 
+# The class loading files to Yandex Disk. 
 class YandexUploader:
     def __init__(self, token_ya: str):
         self.token_ya = token_ya
@@ -271,9 +286,9 @@ class YandexUploader:
             token_ya = file.read().strip()    
         return token_ya
     
-    # Upload method photos getting from VK move to Disk.Yandex
+    # Upload method photos getting from aplications move to Disk.Yandex
     def upload(self, folder_path='VK_photos'):
-        """This is the upload method photos getting from VK move to Disk.Yandex."""
+        """This is the upload method photos getting from aplications move to Disk.Yandex."""
         time_start = datetime.now()
         file_path = os.listdir(folder_path)
         count_files = 0
@@ -288,20 +303,21 @@ class YandexUploader:
             response_upload = requests.post(url=href_json['href'], files=data)
             count_files += 1
             count_percent += round((100 / len(file_path)), 1)
-            # print(f'The result of POST-operation is: "{response_upload.status_code}". Photo - {i} moved successfuly! File number: {count_files}; finished: {count_percent} percents.')
             print("*" *  int(count_percent/5), f'{count_percent}%', end='')
         time_end = datetime.now()
         period = time_end - time_start
         print(f' Copying files to Disk.Yandex - complete! Start: {time_start}, end: {time_end}, total run time: {period}.')
-        result_form()
+        Forms.result_form()
          
-
-# ?????????????????????????????????????????????????????????????????????????????????????????????????????????? если убрать класс поплывут функции!
+# The class to operate with Google Drive.
 class GoogleDriveUploader:
-    def __init__(self):
-        pass
+    def __init__(self, file_name, name_folder):
+        self.file_name = file_name
+        self.name_folder = name_folder
 
+    # The function for receive file from Google Drive to local files folder.
     def get_gd_files(file_id='1YOYIoJDzH6QDYQsMRXxb3PXgm-pxbKRE', file_name='5.jpg', name_folder='./Files_from_GD'):    
+        """This is he function for receive file from Google Drive to local files folder."""
         SCOPES = ['https://www.googleapis.com/auth/drive']
         SERVICE_ACCOUNT_FILE = 'google_ser_key_py-52-060422.json'
         credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -318,13 +334,13 @@ class GoogleDriveUploader:
             file.write(new_f.read())
         YandexUploader.upload(YandexUploader(YandexUploader.token_Ya()), folder_path='Files_from_GD')
         
-
+    # The function uploading files from local files folder to Google Drive.
     def upload_gd_files(name_folder='VK_photos'):
+        """It is the function uploading files from local files folder to Google Drive."""
         SCOPES = ['https://www.googleapis.com/auth/drive']
         SERVICE_ACCOUNT_FILE = 'google_ser_key_py-52-060422.json'
         credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
         service = build('drive', 'v3', credentials=credentials)
-
         folder_id = '1Bxn_CsWNLjvVAH60oDeBWr2NKpJoydCb'
         os.chdir(name_folder)
         files_in_dir = os.listdir()
@@ -337,22 +353,116 @@ class GoogleDriveUploader:
             time.sleep(0.001)
             print(i + 1, f'file, ID: {id_res_upload}')
         print(f'Process is complete. To Google Drive copied files:', i + 1)
-        result_form()
+        Forms.result_form()
 
+# It is the class for different moving operations with the social network "Ok".
+class OkGetPhoto:
+    def __init__(self, session_key, application_key_ok, session_secret_key_ok ):
+        self.session_key = session_key
+        self.application_key_ok = application_key_ok
+        self.session_secret_key_ok = session_secret_key_ok
+
+    # Token function for access in Ok platform. 
+    def session_key_ok():
+        """It is session key function for access in Ok platform."""
+        with open('session_key_ok.txt', 'r') as file:
+            session_key = file.read().strip()    
+        return session_key
+
+    # Application key function for Ok.ru platform. 
+    def application_key_Ok():
+        """It is application key function for Ok.ru platform."""
+        with open('application_key_ok.txt', 'r') as file:
+            application_key_ok = file.read().strip()    
+        return application_key_ok
+
+    # Session secret key function for Ok.ru platform. 
+    def session_secret_key_Ok():
+        """It is session secret key function for Ok.ru platform."""
+        with open('session_secret_key_ok.txt', 'r') as file:
+            session_secret_key_ok = file.read().strip()    
+        return session_secret_key_ok
+
+    # Get photos from Ok.ru function.
+    def get_photo_ok(aid='812270533647', count_photos=10):
+        """It is get photos from Ok.ru function."""
+
+        url = 'https://api.ok.ru/fb.do'
+        str_param = ''
+        params = {
+            'application_key' : OkGetPhoto.application_key_Ok(),
+            'aid' : aid,
+            'count' : count_photos,
+            'detectTotalCount' : True,
+            'session_key' : OkGetPhoto.session_key_ok(),
+            'sig' : '',
+            'method' : 'photos.getPhotos'
+        }     
+        sorted_tuple = sorted(params.items(), key=lambda x: x[0])
+        params = dict(sorted_tuple)
+        for i in params:
+            if i == 'sig':
+                continue
+            else:    
+                str_param = str_param + i + '=' + str(params[i])
+        str_param += OkGetPhoto.session_secret_key_Ok()
+        sig = md5(str_param.encode()).hexdigest()
+        params['sig'] = sig
+        path = url
+        for i in params:
+            if i == 'aid':
+                path = path + '?' + i + '=' + str(params[i])
+            else:
+                path = path + '&' + i + '=' + str(params[i])
+        path = path + '&session_key' + '=' + OkGetPhoto.session_key_ok()
+        response = requests.get(path).json()
+        res_json = response['photos']
+        return res_json
+
+    # The function for download operation with cocial network "Ok".
+    def download_ok(name_folder='Ok_photos'):
+        """This is the function for download operation with cocial network "Ok"."""
+        count_files = 0
+        count_percent = 0
+        dict_ok_photos = {}
+        dictok_photos = {}
+        result_ok_dict = {}
+        list_id_photos = []
+        ok_photos = OkGetPhoto.get_photo_ok()
+        if not os.path.isdir(name_folder):
+            os.mkdir(name_folder)
+        os.chdir(name_folder)
+        time_start = datetime.now()
+        for i in ok_photos: 
+            list_id_photos.append(i['id'])
+        for i in list_id_photos:
+            list_ok_photos = []
+            for j in ok_photos:
+                for k in j:
+                    if i == j['id'] and 'pic' in k:
+                        list_ok_photos.append(k)
+                dict_ok_photos[i] = list_ok_photos
+        for  i, j in dict_ok_photos.items():
+            dictok_photos[i] = j[-1]
+        for i, j in dictok_photos.items():
+            for k in ok_photos:
+                if i == k['id']:
+                    result_ok_dict[i] = k[j] 
+        for id, url in result_ok_dict.items():
+            file_name_ok = f'id{id}from_Ok.jpg'
+            try:
+                urllib.request.urlretrieve(url, filename=file_name_ok)
+            except HTTPError:
+                print('Terribly sorry, but there is HTTP problem!')
+            else:        
+                count_files += 1
+                count_percent += round((100 / len(result_ok_dict)), 1)
+                print("#" *  int(count_percent/5), f'{count_percent}%', end='')
+        time_end = datetime.now()  
+        period = time_end - time_start
+        print(f" The copying photos from Ok successfully complete in local folder {name_folder}! Start time: {time_start}, end time: {time_end}. Total time: {period}.")
+        os.chdir('..')
+        YandexUploader.upload(YandexUploader(YandexUploader.token_Ya()), folder_path='Ok_photos')
 
 if __name__ == '__main__':
-    main_form()
-    
-
-    # testing part:
-    # VkGetPhoto.get_photos_VK(5)- successfully
-    # print(VkGetPhoto.convert_date(1562944607)) - successfully
-    # VkGetPhoto.dict_list_photos_VK(10)  - successfully
-    # VkGetPhoto.selection_get_photos()  - successfully
-    # VkGetPhoto.same_likes_func()  - successfully
-    # VkGetPhoto.json_create()  - successfully
-    # VkGetPhoto.read_json_file('file_photos.json') - successfully
-    # VkGetPhoto.copy_photos('VK_photos') - successfully
-    # YandexUploader(YandexUploader.token_Ya()).upload('VK_photos') - successfully
-    # GoogleDriveUploader.upload_gd_files() - successfully
-    # GoogleDriveUploader.get_gd_files() - successfully
+    Forms.main_form(Forms)

@@ -1,4 +1,6 @@
+io
 os
+os.path
 requests
 time 
 PySimpleGUI 
@@ -7,3 +9,8 @@ datetime
 json
 urllib.request
 tkinter
+from hashlib import md5
+from urllib.error import HTTPError
+from google.oauth2 import service_account
+from googleapiclient.http import MediaIoBaseDownload,MediaFileUpload
+from googleapiclient.discovery import build

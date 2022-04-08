@@ -11,3 +11,6 @@ token*.txt
 *.xls
 client_secret.json
 google_ser_key_py-52-060422.json
+application_key_ok.txt
+session_key_ok.txt
+session_secret_key_ok.txt
