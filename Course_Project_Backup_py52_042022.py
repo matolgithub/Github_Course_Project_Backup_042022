@@ -1,7 +1,8 @@
+from hashlib import md5
 import os
 from sys import api_version
-from turtle import color
 from urllib.error import HTTPError
+from webbrowser import get
 import requests
 import time 
 import json
@@ -24,6 +25,7 @@ import shutil
 from mimetypes import MimeTypes
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from ok_api import OkApi
 
 # Не забыть в конце курсовой работы проверить и внести в requirements.txt все библиотеки и фреймворки!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -38,7 +40,7 @@ def main_form():
     VK_YD_button = Button(text="From VK to Yandex Disk ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=VkGetPhoto.VK_YD_from_but)
     VK_GD_button = Button(text="From VK to Google Drive", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GoogleDriveUploader.upload_gd_files)
     GD_YD_button = Button(text="From GD to Yandex Disk", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=GoogleDriveUploader.get_gd_files)
-    Ok_YD_button = Button(text="From Ok to Yandex Disk  ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
+    Ok_YD_button = Button(text="From Ok to Yandex Disk  ", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=OkGetPhoto.download_ok)
     close_button = Button(text="Close form", activebackground='red', highlightcolor='red', bg='blue', fg='white', command=exit)
     VK_YD_button.grid(row=3, column=1, padx=10, pady=10, sticky="e")
     VK_GD_button.grid(row=4, column=1, padx=10, pady=10, sticky="e")
@@ -271,9 +273,9 @@ class YandexUploader:
             token_ya = file.read().strip()    
         return token_ya
     
-    # Upload method photos getting from VK move to Disk.Yandex
+    # Upload method photos getting from aplications move to Disk.Yandex
     def upload(self, folder_path='VK_photos'):
-        """This is the upload method photos getting from VK move to Disk.Yandex."""
+        """This is the upload method photos getting from aplications move to Disk.Yandex."""
         time_start = datetime.now()
         file_path = os.listdir(folder_path)
         count_files = 0
@@ -340,9 +342,115 @@ class GoogleDriveUploader:
         result_form()
 
 
+class OkGetPhoto:
+    def __init__(self, session_key, application_key_ok, session_secret_key_ok ):
+        self.session_key = session_key
+        self.application_key_ok = application_key_ok
+        self.session_secret_key_ok = session_secret_key_ok
+
+    # Token function for access in Ok platform. 
+    def session_key_ok():
+        """It is session key function for access in Ok platform."""
+        with open('session_key_ok.txt', 'r') as file:
+            session_key = file.read().strip()    
+        return session_key
+
+    # Application key function for Ok.ru platform. 
+    def application_key_Ok():
+        """It is application key function for Ok.ru platform."""
+        with open('application_key_ok.txt', 'r') as file:
+            application_key_ok = file.read().strip()    
+        return application_key_ok
+
+    # Session secret key function for Ok.ru platform. 
+    def session_secret_key_Ok():
+        """It is session secret key function for Ok.ru platform."""
+        with open('session_secret_key_ok.txt', 'r') as file:
+            session_secret_key_ok = file.read().strip()    
+        return session_secret_key_ok
+
+    # Get photos from Ok.ru function.
+    def get_photo_ok(aid='812270533647', count_photos=10):
+        """It is get photos from Ok.ru function."""
+
+        url = 'https://api.ok.ru/fb.do'
+        str_param = ''
+        params = {
+            'application_key' : OkGetPhoto.application_key_Ok(),
+            'aid' : aid,
+            'count' : count_photos,
+            'detectTotalCount' : True,
+            'session_key' : OkGetPhoto.session_key_ok(),
+            'sig' : '',
+            'method' : 'photos.getPhotos'
+        }     
+        sorted_tuple = sorted(params.items(), key=lambda x: x[0])
+        params = dict(sorted_tuple)
+        for i in params:
+            if i == 'sig':
+                continue
+            else:    
+                str_param = str_param + i + '=' + str(params[i])
+        str_param += OkGetPhoto.session_secret_key_Ok()
+        sig = md5(str_param.encode()).hexdigest()
+        params['sig'] = sig
+        path = url
+        for i in params:
+            if i == 'aid':
+                path = path + '?' + i + '=' + str(params[i])
+            else:
+                path = path + '&' + i + '=' + str(params[i])
+        path = path + '&session_key' + '=' + OkGetPhoto.session_key_ok()
+        response = requests.get(path).json()
+        res_json = response['photos']
+        # pprint(res_json)
+        return res_json
+
+    def download_ok(name_folder='Ok_photos'):
+        count_files = 0
+        count_percent = 0
+        dict_ok_photos = {}
+        dictok_photos = {}
+        result_ok_dict = {}
+        list_id_photos = []
+        ok_photos = OkGetPhoto.get_photo_ok()
+        if not os.path.isdir(name_folder):
+            os.mkdir(name_folder)
+        os.chdir(name_folder)
+        time_start = datetime.now()
+        for i in ok_photos: 
+            list_id_photos.append(i['id'])
+        for i in list_id_photos:
+            list_ok_photos = []
+            for j in ok_photos:
+                for k in j:
+                    if i == j['id'] and 'pic' in k:
+                        list_ok_photos.append(k)
+                dict_ok_photos[i] = list_ok_photos
+        for  i, j in dict_ok_photos.items():
+            dictok_photos[i] = j[-1]
+        for i, j in dictok_photos.items():
+            for k in ok_photos:
+                if i == k['id']:
+                    result_ok_dict[i] = k[j] 
+        for id, url in result_ok_dict.items():
+            file_name_ok = f'id{id}from_Ok.jpg'
+            try:
+                urllib.request.urlretrieve(url, filename=file_name_ok)
+            except HTTPError:
+                print('Terribly sorry, but there is HTTP problem!')
+            else:        
+                count_files += 1
+                count_percent += round((100 / len(result_ok_dict)), 1)
+                print("#" *  int(count_percent/5), f'{count_percent}%', end='')
+        time_end = datetime.now()  
+        period = time_end - time_start
+        print(f" The copying photos from Ok successfully complete in local folder {name_folder}! Start time: {time_start}, end time: {time_end}. Total time: {period}.")
+        os.chdir('..')
+        YandexUploader.upload(YandexUploader(YandexUploader.token_Ya()), folder_path='Ok_photos')
+
 if __name__ == '__main__':
     main_form()
-    
 
     # testing part:
     # VkGetPhoto.get_photos_VK(5)- successfully
